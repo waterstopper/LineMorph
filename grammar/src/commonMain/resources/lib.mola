@@ -1,0 +1,8 @@
+load(`natives.mola)
+
+@AsText(by, from)
+fn select(type, groupType, input) {
+   groups <- split(input, groupType)
+   :split input by groupType as groups
+   return :find type in input
+}

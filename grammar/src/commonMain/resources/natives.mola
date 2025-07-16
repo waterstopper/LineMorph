@@ -1,0 +1,50 @@
+@Native()
+@AsText(in)
+@ArgList(text)
+fn find(arg, text) {}
+
+@Native()
+@ArgList()
+fn json(arg) {}
+
+@Native()
+@ArgList()
+fn parse(json) {}
+
+@Native()
+@AsText(from)
+@ArgList()
+fn read(arg, path) {}
+
+@Native()
+fn load(codePath) {}
+
+@Native()
+fn print(arg) {}
+
+@Native()
+@AsText(to)
+@ArgList()
+fn write(arg, path) {}
+
+@Native()
+@AsText(by)
+@ArgList()
+fn split(text, separator) {}
+
+@Native()
+@AsText(with)
+@ArgList()
+fn replace(replaced, replacement) {}
+
+@Native
+@AsText(by)
+fn filter(list, func)
+
+# add all json keys to current state
+@Native
+fn unwrap(json)
+
+# wrap all current refs into json object
+@Native
+fn wrap()
