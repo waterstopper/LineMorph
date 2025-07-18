@@ -1,0 +1,14 @@
+@Native()
+fn print(arg) {}
+
+@Native
+@AsText(by)
+fn filter(list, func)
+
+# add all json keys to current state
+@Native
+fn unwrap(json)
+
+# wrap all current refs into json object
+@Native
+fn wrap()

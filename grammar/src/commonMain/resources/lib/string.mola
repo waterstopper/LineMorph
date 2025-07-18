@@ -1,0 +1,22 @@
+@Native()
+@AsText(in)
+@ArgList(text)
+fn find(arg, text) {}
+
+@Native()
+@ArgList()
+fn json(arg) {}
+
+@Native()
+@ArgList()
+fn parseJson(json) {}
+
+@Native()
+@AsText(by)
+@ArgList()
+fn split(text, separator) {}
+
+@Native()
+@AsText(with)
+@ArgList()
+fn replace(replaced, replacement) {}

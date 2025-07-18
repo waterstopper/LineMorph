@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 plugins {
     kotlin("multiplatform") version "2.2.0"
 }
@@ -47,5 +49,7 @@ kotlin {
     }
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")
+        apiVersion.set(KotlinVersion.KOTLIN_2_2)
+        languageVersion.set(KotlinVersion.KOTLIN_2_2)
     }
 }

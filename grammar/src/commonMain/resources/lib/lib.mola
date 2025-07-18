@@ -1,4 +1,4 @@
-load(`natives.mola)
+load("natives.mola")
 
 @AsText(by, from)
 fn select(type, groupType, input) {

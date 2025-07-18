@@ -3,6 +3,15 @@ import kotlin.test.Test
 
 class GrammarTest {
     @Test
+    fun fileTest() {
+        val input = """
+            print(read("/Users/waterstop/Desktop/a.txt"))
+        """.trimIndent()
+
+        Pipeline.eval(input)
+    }
+
+    @Test
     fun testGrammar() {
         val input = """
             # a
@@ -11,7 +20,7 @@ class GrammarTest {
             
             
             b <- true
-            : b as 232
+            ^ b as 232
             @ArgList() fn a() {}""".trimIndent()
 
         Pipeline.parse(input)
@@ -22,14 +31,16 @@ class GrammarTest {
     @Test
     fun testSingleExpressions() {
         val exprs = listOf(
-            ":b as 2",
+            "^b as 2",
             "a <- `a",
-            "`abc",
-            "231432",
-            """"a"""",
-            "2022-12-23"
+            "a <- {\"a\":1}",
+            "a <- a[\"231432\"][1]",
+            "a <- {}[\"231432\"][1]",
+            "a <- {\"s\":21,\"a\":{\"d\":[1,2,a]}}[1][qwer]",
+            """a <- "a"""",
+            "a <- 2022-12-23"
         )
 
-        exprs.forEach { Pipeline.parse(it) }
+        exprs.forEach { println(Pipeline.parse(it)) }
     }
 }

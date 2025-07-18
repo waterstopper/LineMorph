@@ -1,0 +1,12 @@
+@Native()
+@AsText(from)
+@ArgList()
+fn read(arg, path) {}
+
+@Native()
+fn load(codePath) {}
+
+@Native()
+@AsText(to)
+@ArgList()
+fn write(arg, path) {}

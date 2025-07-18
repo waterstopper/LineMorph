@@ -19,8 +19,8 @@ object Pipeline {
         val ast = grammar.parseToEnd(input)
         val defs = Definitions.init()
 
-//        ast.forEach {
-//            println(it.eval(defs))
-//        }
+        ast.forEach {
+            println(it.eval(defs))
+        }
     }
 }

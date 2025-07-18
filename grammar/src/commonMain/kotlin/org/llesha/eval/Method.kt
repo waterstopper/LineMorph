@@ -1,8 +1,16 @@
 package org.llesha.eval
 
 import org.llesha.exception.EvalException
+import org.llesha.expr.Expr
+import org.llesha.expr.Statement
 
-abstract class Method(val params: List<Param>) {
+abstract class Method(val params: List<Param>): Statement() {
+    abstract fun call(args: List<Expr>, defs: Definitions) : Expr
+
+    override fun eval(defs: Definitions): Expr {
+        TODO("Not yet implemented")
+    }
+
     fun validate(words: List<String>) {
         val isValid = params.map { e -> e.word }.zip(words).all { it.first == it.second }
         if (!isValid) {
@@ -10,11 +18,11 @@ abstract class Method(val params: List<Param>) {
         }
     }
 
-    val name: String get() = params.first().word
-    val signature: Pair<String, Int> get() = params.last().word to params.size - 1
+    open val name: String get() = params.first().word
+    val signature: Pair<String, Int> get() = params.first().word to params.size
 
     companion object {
-        fun createNativeMethod(vararg words: String): NativeMethod {
+        fun createNativeMethod(behavior: (List<Expr>) -> Expr, vararg words: String): NativeMethod {
             if (words.size % 2 == 1) {
                 throw IllegalArgumentException("Words must have an even number of length")
             }
@@ -27,7 +35,7 @@ abstract class Method(val params: List<Param>) {
                 params.add(Param(name, word))
             }
 
-            return NativeMethod(params)
+            return NativeMethod(params, behavior)
         }
     }
 }

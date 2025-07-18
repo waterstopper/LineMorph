@@ -11,7 +11,6 @@ object Utils {
     val YEAR_DATE_REGEX = Regex("(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)")
 
     fun dateToInstant(date: String): Instant {
-        val find = YEAR_DATE_REGEX.find(date)!!
         return Instant.parse("${date}T00:00:00Z")
     }
 

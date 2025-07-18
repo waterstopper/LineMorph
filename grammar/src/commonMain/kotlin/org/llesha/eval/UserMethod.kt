@@ -2,16 +2,17 @@ package org.llesha.eval
 
 import org.llesha.expr.Annotation
 import org.llesha.expr.Expr
+import org.llesha.expr.Statement
 
 /**
  * @author al.kononov
  */
-class Function(
-    val name: String,
+class UserMethod(
+    override val name: String,
     val parameters: List<String>,
     val annotations: List<Annotation>,
-    val body: List<Expr>
-) : Expr() {
+    val body: List<Statement>
+) : Method(emptyList()) {
     override fun toString(): String {
         return "${
             annotations.joinToString(
@@ -21,7 +22,11 @@ class Function(
         }fn $name(${parameters.joinToString(", ")}) {${body.joinToString("\n", "\n", "\n")}}"
     }
 
-    override fun eval(defs: Definitions): Any {
+    override fun call(args: List<Expr>, defs: Definitions): Expr {
+        TODO("Not yet implemented")
+    }
+
+    override fun eval(defs: Definitions): Expr {
         TODO("Not yet implemented")
     }
 }
