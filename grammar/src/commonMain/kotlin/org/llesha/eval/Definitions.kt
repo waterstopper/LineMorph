@@ -16,10 +16,10 @@ class Definitions(val variables: MutableMap<String, Type>, val methods: MutableM
         methods[name to paramsCount] ?: throw EvalException("Unknown method $name")
 
     fun addMethod(method: Method) {
-        if (methods.containsKey(method.signature)) {
-            throw EvalException("Method ${method.name} already exists")
+        if (methods.containsKey(method.signature())) {
+            throw EvalException("Method ${method.name()} already exists")
         }
-        methods[method.signature] = method
+        methods[method.signature()] = method
     }
 
     fun addVariable(name: String, type: Type) {
@@ -28,11 +28,12 @@ class Definitions(val variables: MutableMap<String, Type>, val methods: MutableM
 
     fun addArgs(args: List<Expr>, method: Method): Definitions {
         val methodDefs = Definitions(variables.toMutableMap(), methods.toMutableMap())
-        method.params.zip(args).forEach { (param, arg) ->
-            if(arg !is Type) {
+
+        method.params.names().zip(args).forEach { (param, arg) ->
+            if (arg !is Type) {
                 throw EvalException("Expected Type as argument")
             }
-            methodDefs.addVariable(param.name, arg)
+            methodDefs.addVariable(param, arg)
         }
         return methodDefs
     }
@@ -47,4 +48,25 @@ class Definitions(val variables: MutableMap<String, Type>, val methods: MutableM
     }
 }
 
-data class Param(val name: String, val word: String)
+open class Params(val params: List<String>) {
+    open fun name() = params.first()
+    open fun signature(): Pair<String, Int> = name() to params.size
+
+    open fun names(): List<String> = params
+}
+
+class NamedParams(val namedParams: List<NamedParam>) : Params(emptyList()) {
+    override fun name() = namedParams.first().link
+    override fun signature(): Pair<String, Int> = name() to namedParams.size
+    override fun names(): List<String> = namedParams.map { it.name }
+
+    override fun toString(): String = namedParams.joinToString(", ")
+
+    fun validate(words: List<String>): Boolean {
+        return namedParams.subList(1, namedParams.size).zip(words).all { it.first.link == it.second }
+    }
+}
+
+data class NamedParam(val name: String, val link: String) {
+    override fun toString(): String = name
+}

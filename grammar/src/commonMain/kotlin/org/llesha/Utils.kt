@@ -10,6 +10,12 @@ import kotlin.time.Instant
 object Utils {
     val YEAR_DATE_REGEX = Regex("(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)")
 
+    fun List<Expr>.replaceElem(index: Int, elem:Expr): List<Expr> {
+        val mutList = this.toMutableList()
+        mutList[index] = elem
+        return mutList
+    }
+
     fun dateToInstant(date: String): Instant {
         return Instant.parse("${date}T00:00:00Z")
     }

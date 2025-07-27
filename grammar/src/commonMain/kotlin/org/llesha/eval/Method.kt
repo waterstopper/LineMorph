@@ -1,41 +1,54 @@
 package org.llesha.eval
 
-import org.llesha.exception.EvalException
+import org.llesha.Utils.replaceElem
+import org.llesha.expr.Annotation
 import org.llesha.expr.Expr
 import org.llesha.expr.Statement
+import org.llesha.type.MList
 
-abstract class Method(val params: List<Param>): Statement() {
-    abstract fun call(args: List<Expr>, defs: Definitions) : Expr
+abstract class Method(annotations: List<Annotation>, val params: Params) : Statement() {
+    val annotations: Map<String, Annotation> = annotations.associateBy { it.name }
+
+    abstract fun callRaw(args: List<Expr>, defs: Definitions): Expr
+
+    fun call(args: List<Expr>, defs: Definitions): Expr {
+        val argList = annotations["ArgList"]
+        if (argList != null) {
+            val listArg = argList.args.first()
+            val listIndex = params.names().indexOf(listArg)
+            if (args[listIndex] is MList) {
+                return MList((args[listIndex] as MList).list.map { callRaw(args.replaceElem(listIndex, it), defs) })
+            }
+        }
+        return callRaw(args, defs)
+    }
 
     override fun eval(defs: Definitions): Expr {
         TODO("Not yet implemented")
     }
 
-    fun validate(words: List<String>) {
-        val isValid = params.map { e -> e.word }.zip(words).all { it.first == it.second }
-        if (!isValid) {
-            throw EvalException("Invalid words $words for $name method. Expected: ${params.map { e -> e.word }}")
-        }
-    }
-
-    open val name: String get() = params.first().word
-    val signature: Pair<String, Int> get() = params.first().word to params.size
+    open fun name(): String = params.name()
+    open fun signature(): Pair<String, Int> = params.signature()
 
     companion object {
-        fun createNativeMethod(behavior: (List<Expr>) -> Expr, vararg words: String): NativeMethod {
+        fun createNativeMethod(
+            behavior: (List<Expr>) -> Expr,
+            annotations: List<Annotation>,
+            vararg words: String
+        ): NativeMethod {
             if (words.size % 2 == 1) {
                 throw IllegalArgumentException("Words must have an even number of length")
             }
-            val params = mutableListOf<Param>()
+            val params = mutableListOf<NamedParam>()
             val it = words.iterator()
 
             while (it.hasNext()) {
-                val word = it.next()
+                val link = it.next()
                 val name = it.next()
-                params.add(Param(name, word))
+                params.add(NamedParam(name, link))
             }
 
-            return NativeMethod(params, behavior)
+            return NativeMethod(annotations, NamedParams(params), behavior)
         }
     }
 }

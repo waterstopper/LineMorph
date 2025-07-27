@@ -26,7 +26,7 @@ class MNumber(val number: Long) : Type() {
 
 }
 
-class MString(val string: String) : Type() {
+data class MString(val string: String) : Type() {
     override fun toString(): String = string
 
 }
@@ -40,7 +40,7 @@ class MTime(val date: Instant) : Type() {
     override fun toString(): String = date.toString()
 }
 
-class MList(val list: List<Expr>) : ContainerType() {
+data class MList(val list: List<Expr>) : ContainerType() {
     override fun toString(): String = list.toString()
 
     override fun index(index: Expr): Expr {

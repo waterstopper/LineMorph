@@ -14,13 +14,16 @@ object Pipeline {
         return grammar.parseToEnd(input);
     }
 
-    fun eval(input: String) {
+    fun eval(input: String): Expr {
         val grammar = MorphGrammar()
         val ast = grammar.parseToEnd(input)
         val defs = Definitions.init()
 
-        ast.forEach {
-            println(it.eval(defs))
+        val result = ast.map {
+            val statementEval = it.eval(defs)
+            println(statementEval)
+            statementEval
         }
+        return result.last()
     }
 }

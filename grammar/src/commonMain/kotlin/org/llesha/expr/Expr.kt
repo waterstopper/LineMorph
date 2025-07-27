@@ -18,10 +18,16 @@ class Void : Expr() {
     override fun eval(defs: Definitions): Expr {
         return this
     }
-
 }
 
-abstract class Statement : Expr() {
+abstract class Statement : Expr()
+
+class ReturnStatement(val value: Expr) : Statement() {
+    override fun toString(): String = "return $value"
+
+    override fun eval(defs: Definitions): Expr {
+         return value.eval(defs)
+    }
 
 }
 

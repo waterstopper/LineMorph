@@ -1,21 +1,32 @@
 import org.llesha.Pipeline
+import org.llesha.type.MList
+import org.llesha.type.MString
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class GrammarTest {
     @Test
     fun fileTest() {
         val input = """
-            print(read("/Users/waterstop/Desktop/a.txt"))
+            @AsText(by, from)
+            fn select(type, groupType, input) {
+                groups <- split(input, groupType)
+                return find(type, groups)
+            }
+
+            select("\\d+", "\n", "ds233131dsaddq\nd32ds\n232ds233dsa")
         """.trimIndent()
 
-        Pipeline.eval(input)
+        val res = Pipeline.eval(input)
+        assertEquals(MList(listOf(MString("233131"), MString("32"), MString("232"))), res)
+        println(res)
     }
 
     @Test
     fun testGrammar() {
         val input = """
             # a
-            a <- `a    
+            a <- `a
             a <- 232
             
             

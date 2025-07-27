@@ -1,5 +1,7 @@
 package org.llesha.eval
 
+import org.llesha.AnnotationProcessor
+import org.llesha.Pipeline
 import org.llesha.expr.Annotation
 import org.llesha.expr.Expr
 import org.llesha.expr.Statement
@@ -8,25 +10,40 @@ import org.llesha.expr.Statement
  * @author al.kononov
  */
 class UserMethod(
-    override val name: String,
-    val parameters: List<String>,
-    val annotations: List<Annotation>,
-    val body: List<Statement>
-) : Method(emptyList()) {
+    annotations: List<Annotation>,
+    val body: List<Statement>,
+    params: Params
+) : Method(annotations, params) {
+    override fun name(): String = params.name()
+
     override fun toString(): String {
         return "${
-            annotations.joinToString(
-                separator = "\n",
-                postfix = "\n"
-            )
-        }fn $name(${parameters.joinToString(", ")}) {${body.joinToString("\n", "\n", "\n")}}"
+            annotations.values.joinToString(separator = "\n", postfix = "\n")
+        }fn ${name()}($params) {${body.joinToString("\n", "\n", "\n")}}"
     }
 
-    override fun call(args: List<Expr>, defs: Definitions): Expr {
-        TODO("Not yet implemented")
+    override fun callRaw(args: List<Expr>, defs: Definitions): Expr {
+        return body.map { it.eval(defs) }.last()
     }
 
     override fun eval(defs: Definitions): Expr {
-        TODO("Not yet implemented")
+        defs.addMethod(this)
+        return this
+    }
+
+    companion object {
+        fun cons(
+            name: String,
+            parameters: List<String>,
+            annotations: List<Annotation>,
+            body: List<Statement>
+        ): UserMethod {
+            val annotationsMap = annotations.associateBy { it.name }
+            val params = if (annotationsMap.containsKey("AsText")) {
+                AnnotationProcessor.processAsText(name, parameters, annotationsMap["AsText"]!!)
+            } else Params(parameters)
+
+            return UserMethod(annotations, body, params)
+        }
     }
 }

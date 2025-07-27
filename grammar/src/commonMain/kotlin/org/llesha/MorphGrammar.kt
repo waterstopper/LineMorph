@@ -13,6 +13,7 @@ import org.llesha.type.*
 class MorphGrammar() : Grammar<List<Expr>>() {
 
     // LITERAL
+    private val returnToken by literalToken("return")
     private val trueToken by literalToken("true")
     private val falseToken by literalToken("false")
     private val assignToken by literalToken("<-")
@@ -48,6 +49,7 @@ class MorphGrammar() : Grammar<List<Expr>>() {
     // )*              – repeating as a group any number of times
     // "               – closing double quote
     private val stringLiteral by regexToken("\"[^\\\\\"]*(\\\\[\"nrtbf\\\\][^\\\\\"]*)*\"")
+
     // EXPRS
     private val stringOne by regexToken("`[\\S]*")
     private val stringValue by stringLiteral or stringOne map {
@@ -70,8 +72,10 @@ class MorphGrammar() : Grammar<List<Expr>>() {
     private val date: Parser<MDate> by dateYear map { MDate(Utils.dateToInstant(it.text)) }
     private val number: Parser<MNumber> by numberToken map { MNumber(it.text.toLong()) }
     private val ident by regexToken("[a-zA-Z]([\\w-]*\\w)?")
-//    private val field: Parser<Field> by
-    private val indexed: Parser<Indexed> by parser(this::nonIndexed) and oneOrMore(-lBracketToken and parser(this::expr) and -rBracketToken) map { Indexed(it.t1, it.t2) }
+
+    //    private val field: Parser<Field> by
+    private val indexed: Parser<Indexed> by parser(this::nonIndexed) and
+            oneOrMore(-lBracketToken and parser(this::expr) and -rBracketToken) map { Indexed(it.t1, it.t2) }
 
     private val jsonPrimitiveValue: Parser<Type> = bool or stringValue or number
     private val jsonObject: Parser<MMap> = (-lBraceToken and
@@ -97,23 +101,23 @@ class MorphGrammar() : Grammar<List<Expr>>() {
         )
     }
     private val call: Parser<Call> by ident and lParenToken and optional(args) and rParenToken map {
-        Call(
-            it.t1.text,
-            it.t3 ?: emptyList()
-        )
+        Call(it.t1.text, it.t3 ?: emptyList())
     }
-    private val function: Parser<UserMethod> by zeroOrMore(annotation) and -fnToken and
+    private val function: Parser<UserMethod> by zeroOrMore(annotation and -optional(statementSeparator)) and -fnToken and
             ident and -lParenToken and args and -rParenToken and
-            -lBraceToken and optional(separated(parser(this::statement), statementSeparator)) and -rBraceToken map {
-        UserMethod(it.t2.text, Utils.argsToParams(it.t3), it.t1, it.t4?.terms ?: emptyList())
+            -lBraceToken and -optional(statementSeparator) and
+            optional(separated(parser(this::statement), statementSeparator)) and
+            -optional(statementSeparator) and -rBraceToken map {
+        UserMethod.cons(it.t2.text, Utils.argsToParams(it.t3), it.t1, it.t4?.terms ?: emptyList())
     }
 
     private val assignment: Parser<Assignment> by ident and -assignToken and parser(this::expr) map
             { Assignment(it.t1.text, it.t2) }
     private val ref: Parser<Ref> by ident map { Ref(it.text) }
     private val nonIndexed: Parser<Expr> by call or ref or type
-    private val expr: Parser<Expr> by  indexed or nonIndexed
-    private val statement: Parser<Statement> by call or assignment or codeText
+    private val expr: Parser<Expr> by indexed or nonIndexed
+    private val returnStatement: Parser<Statement> by -returnToken and expr map { ReturnStatement(it) }
+    private val statement: Parser<Statement> by returnStatement or call or assignment or codeText
 
     override val rootParser: Parser<List<Statement>> by
     separated(statement or function, statementSeparator) map { it.terms }
