@@ -1,6 +1,4 @@
 import org.llesha.Pipeline
-import org.llesha.type.MList
-import org.llesha.type.MString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,8 +16,7 @@ class GrammarTest {
         """.trimIndent()
 
         val res = Pipeline.eval(input)
-        assertEquals(MList(listOf(MString("233131"), MString("32"), MString("232"))), res)
-        println(res)
+        assertEquals("[233131,32,232]", res.toString())
     }
 
     @Test
@@ -44,10 +41,10 @@ class GrammarTest {
         val exprs = listOf(
             "^b as 2",
             "a <- `a",
-            "a <- {\"a\":1}",
-            "a <- a[\"231432\"][1]",
-            "a <- {}[\"231432\"][1]",
-            "a <- {\"s\":21,\"a\":{\"d\":[1,2,a]}}[1][qwer]",
+            """a <- {"a":1}""",
+            """a <- a["231432"][1]""",
+            """a <- {}["231432"][1]""",
+            """a <- {"s":21,"a":{"d":[1,2,a]}}[1][qwer]""",
             """a <- "a"""",
             "a <- 2022-12-23"
         )

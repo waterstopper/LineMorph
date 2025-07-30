@@ -9,6 +9,7 @@ import org.llesha.type.Type
  * @author al.kononov
  */
 abstract class Expr {
+    open fun toStr() = toString()
     abstract fun eval(defs: Definitions): Expr
 }
 

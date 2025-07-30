@@ -82,7 +82,7 @@ class MorphGrammar() : Grammar<List<Expr>>() {
             separated(stringValue and -colonToken and parser(this::expr), commaToken, true) and
             -rBraceToken)
         .map {
-            MMap(it.terms.associate { (key, v) -> Pair(key.string, v) })
+            MMap(it.terms.associate { (key, v) -> Pair(key.string, v as Type) })
         }
     private val jsonArray: Parser<MList> = (-lBracketToken and
             separated(parser(this::expr), commaToken, true) and

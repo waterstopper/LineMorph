@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     kotlin("multiplatform") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.0"
 }
 
 group = "org.llesha"
@@ -27,6 +28,8 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("com.github.h0tk3y.betterParse:better-parse:0.4.4")
+                implementation("org.jetbrains.kotlin:kotlin-serialization:1.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
             }
         }
         val commonTest by getting {

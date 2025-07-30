@@ -67,3 +67,8 @@ fn find(text, toFind) {}
 
 
 # TODO
+1. Tests 1h
+2. JVM Interface 2h:
+   * Shell script
+   * Recipes with the clipboard!
+3. Html interface 16h (4 days)

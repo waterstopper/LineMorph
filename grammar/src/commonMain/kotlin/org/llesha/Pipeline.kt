@@ -11,7 +11,7 @@ object Pipeline {
     val grammar = MorphGrammar()
 
     fun parse(input: String): List<Expr> {
-        return grammar.parseToEnd(input);
+        return grammar.parseToEnd(input)
     }
 
     fun eval(input: String): Expr {

@@ -1,0 +1,51 @@
+# logic
+@Native
+fn and(a, b) {}
+
+@Native
+fn or(a, b) {}
+
+@Native
+@AsText(and)
+fn eq(a, b) {}
+
+@Native
+@AsText(and)
+fn neq(a, b) {}
+
+@Native
+@AsText(and)
+fn leq(a, b) {}
+
+@Native
+@AsText(and)
+fn geq(a, b) {}
+
+@Native
+@AsText(and)
+fn gt(a, b) {}
+
+@Native
+@AsText(to)
+fn lt(a, b) {}
+
+# arithmetic
+@Native
+@AsText(to)
+fn plus(a, b) {}
+
+@Native
+@AsText(with)
+fn minus(a, b) {}
+
+@Native
+@AsText(by)
+fn mul(a, b) {}
+
+@Native
+@AsText(by)
+fn div(a, b) {}
+
+@Native
+@AsText(by)
+fn mod(a, b) {}

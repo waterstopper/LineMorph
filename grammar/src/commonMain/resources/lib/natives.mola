@@ -1,4 +1,7 @@
 @Native()
+fn size(container) {}
+
+@Native()
 fn print(arg) {}
 
 @Native
