@@ -1,4 +1,7 @@
 @Native()
+fn apply(signature, ...) {}
+
+@Native()
 fn size(container) {}
 
 @Native()

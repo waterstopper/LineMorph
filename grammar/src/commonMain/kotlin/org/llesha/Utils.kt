@@ -12,6 +12,7 @@ import kotlin.time.Instant
  */
 object Utils {
     val YEAR_DATE_REGEX = Regex("(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)")
+    val SIGNATURE_REGEX = Regex("([a-zA-Z]([\\w-]*\\w)?)@(\\d+|\\*)")
 
     fun List<Expr>.replaceElem(index: Int, elem: Expr): List<Expr> {
         val mutList = this.toMutableList()

@@ -83,8 +83,6 @@ class MMap(val map: Map<String, Type>) : ContainerType() {
     override fun size(): Int = map.size
 }
 
-class Func(val name: String): Type() {
-    override fun toString(): String {
-        return super.toString()
-    }
+class Func(val name: String, val argNum: Int): Type() {
+    override fun toString(): String = "$name@$argNum"
 }

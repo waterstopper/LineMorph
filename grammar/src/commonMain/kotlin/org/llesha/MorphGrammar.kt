@@ -10,7 +10,7 @@ import org.llesha.eval.UserMethod
 import org.llesha.expr.*
 import org.llesha.type.*
 
-class MorphGrammar() : Grammar<List<Expr>>() {
+class MorphGrammar : Grammar<List<Expr>>() {
 
     // LITERAL
     private val returnToken by literalToken("return")
@@ -35,6 +35,7 @@ class MorphGrammar() : Grammar<List<Expr>>() {
     private val comment by regexToken("#.*(\\n[\\t ]*)*", ignore = true)
     private val codeTextPattern by regexToken("\\^.*")
     private val codeText by codeTextPattern map { CodeText(it.text.substring(1)) }
+    private val varargParam by regexToken("\\*[a-zA-Z]([\\w-]*\\w)?")
 
     private val lineBreak by regexToken("(\\n[\\t ]*)+")
     private val repeatedSeparator by lineBreak or comment or semicolonToken
@@ -71,6 +72,11 @@ class MorphGrammar() : Grammar<List<Expr>>() {
     private val bool: Parser<MBool> by trueToken or falseToken map { MBool(it.text.startsWith("t")) }
     private val date: Parser<MDate> by dateYear map { MDate(Utils.dateToInstant(it.text)) }
     private val number: Parser<MNumber> by numberToken map { MNumber(it.text.toLong()) }
+    private val signatureToken by regexToken(Utils.SIGNATURE_REGEX)
+    private val signature: Parser<Func> by signatureToken map {
+        val (name, argNum) = it.text.split("@")
+        Func(name, argNum.toIntOrNull() ?: -1)
+    }
     private val ident by regexToken("[a-zA-Z]([\\w-]*\\w)?")
 
     //    private val field: Parser<Field> by
@@ -103,8 +109,8 @@ class MorphGrammar() : Grammar<List<Expr>>() {
     private val call: Parser<Call> by ident and lParenToken and optional(args) and rParenToken map {
         Call(it.t1.text, it.t3 ?: emptyList())
     }
-    private val function: Parser<UserMethod> by zeroOrMore(annotation and -optional(statementSeparator)) and -fnToken and
-            ident and -lParenToken and args and -rParenToken and
+    private val function: Parser<UserMethod> by zeroOrMore(annotation and -optional(statementSeparator)) and
+            -fnToken and ident and -lParenToken and args and -rParenToken and
             -lBraceToken and -optional(statementSeparator) and
             optional(separated(parser(this::statement), statementSeparator)) and
             -optional(statementSeparator) and -rBraceToken map {
@@ -114,7 +120,7 @@ class MorphGrammar() : Grammar<List<Expr>>() {
     private val assignment: Parser<Assignment> by ident and -assignToken and parser(this::expr) map
             { Assignment(it.t1.text, it.t2) }
     private val ref: Parser<Ref> by ident map { Ref(it.text) }
-    private val nonIndexed: Parser<Expr> by call or ref or type
+    private val nonIndexed: Parser<Expr> by call or signature or ref or type
     private val expr: Parser<Expr> by indexed or nonIndexed
     private val returnStatement: Parser<Statement> by -returnToken and expr map { ReturnStatement(it) }
     private val statement: Parser<Statement> by returnStatement or call or assignment or codeText

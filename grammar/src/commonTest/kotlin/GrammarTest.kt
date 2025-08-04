@@ -15,8 +15,18 @@ class GrammarTest {
             select("\\d+", "\n", "ds233131dsaddq\nd32ds\n232ds233dsa")
         """.trimIndent()
 
-        val res = Pipeline.eval(input)
+        val res = TestFactory.parseWithLoad(input)
         assertEquals("[233131,32,232]", res.toString())
+    }
+
+    @Test
+    fun testSignature() {
+        val input = """a <- split@2
+            b <- apply(split@2, "text", "e")
+        """.trimIndent()
+
+        val res = TestFactory.parseWithLoad(input)
+        assertEquals("[t,xt]", res.toString())
     }
 
     @Test
@@ -28,7 +38,7 @@ class GrammarTest {
             
             
             b <- true
-            ^ b as 232
+            #^ b as 232
             @ArgList() fn a() {}""".trimIndent()
 
         Pipeline.parse(input)

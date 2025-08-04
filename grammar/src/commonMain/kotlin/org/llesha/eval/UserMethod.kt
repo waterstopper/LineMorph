@@ -1,7 +1,6 @@
 package org.llesha.eval
 
 import org.llesha.AnnotationProcessor
-import org.llesha.Pipeline
 import org.llesha.expr.Annotation
 import org.llesha.expr.Expr
 import org.llesha.expr.Statement
@@ -41,7 +40,7 @@ class UserMethod(
             val annotationsMap = annotations.associateBy { it.name }
             val params = if (annotationsMap.containsKey("AsText")) {
                 AnnotationProcessor.processAsText(name, parameters, annotationsMap["AsText"]!!)
-            } else Params(parameters)
+            } else Params(listOf(name) + parameters)
 
             return UserMethod(annotations, body, params)
         }

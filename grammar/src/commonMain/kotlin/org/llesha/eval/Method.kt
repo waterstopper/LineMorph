@@ -28,7 +28,7 @@ abstract class Method(annotations: List<Annotation>, val params: Params) : State
     }
 
     open fun name(): String = params.name()
-    open fun signature(): Pair<String, Int> = params.signature()
+    open fun signature(): String = params.signature()
 
     companion object {
         fun createNativeMethod(

@@ -2,18 +2,22 @@ package org.llesha.eval
 
 import org.llesha.exception.EvalException
 import org.llesha.expr.Expr
+import org.llesha.type.Func
 import org.llesha.type.Type
 
 /**
  * @author al.kononov
  */
-class Definitions(val variables: MutableMap<String, Type>, val methods: MutableMap<Pair<String, Int>, Method>) {
+class Definitions(val variables: MutableMap<String, Type>, val methods: MutableMap<String, Method>) {
     override fun toString(): String = variables.toString()
 
     fun variable(name: String): Type = variables[name] ?: throw EvalException("Unknown variable $name")
 
+    fun method(fn: Func) =
+        methods[fn.toString()] ?: throw EvalException("Unknown method $fn")
+
     fun method(name: String, paramsCount: Int) =
-        methods[name to paramsCount] ?: throw EvalException("Unknown method $name")
+        methods["$name@$paramsCount"] ?: methods["$name@*"] ?: throw EvalException("Unknown method $name")
 
     fun addMethod(method: Method) {
         if (methods.containsKey(method.signature())) {
@@ -50,14 +54,26 @@ class Definitions(val variables: MutableMap<String, Type>, val methods: MutableM
 
 open class Params(val params: List<String>) {
     open fun name() = params.first()
-    open fun signature(): Pair<String, Int> = name() to params.size
+    open fun signature(): String = name() + "@" + params.size
 
     open fun names(): List<String> = params
+
+    override fun toString(): String = params.joinToString(prefix = "(", postfix = ")")
+
+    companion object {
+        fun of(vararg params: String): Params {
+            return Params(params.toList())
+        }
+    }
+}
+
+class VarargParams(required: List<String>) : Params(required) {
+    override fun signature() = name() + "@*"
 }
 
 class NamedParams(val namedParams: List<NamedParam>) : Params(emptyList()) {
     override fun name() = namedParams.first().link
-    override fun signature(): Pair<String, Int> = name() to namedParams.size
+    override fun signature(): String = name() + "@" + namedParams.size
     override fun names(): List<String> = namedParams.map { it.name }
 
     override fun toString(): String = namedParams.joinToString(", ")

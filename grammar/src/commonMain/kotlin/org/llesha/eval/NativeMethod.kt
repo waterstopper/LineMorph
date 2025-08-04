@@ -13,12 +13,9 @@ import org.llesha.expr.Expr
 import org.llesha.expr.Void
 import org.llesha.native.read
 import org.llesha.native.write
-import org.llesha.type.ContainerType
-import org.llesha.type.MList
-import org.llesha.type.MMap
-import org.llesha.type.MString
+import org.llesha.type.*
 
-class NativeMethod(annotations: List<Annotation>, params: NamedParams, val behavior: (List<Expr>) -> Expr) :
+class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: (List<Expr>) -> Expr) :
     Method(annotations, params) {
     override fun toString(): String = "${params.name()}(${params.params.size})"
 
@@ -116,6 +113,12 @@ class NativeMethod(annotations: List<Annotation>, params: NamedParams, val behav
         }
 
         private fun loadNatives(defs: Definitions) {
+            val apply = NativeMethod(emptyList(), VarargParams(listOf("apply", "func"))) { li ->
+                val method = defs.method(li.first() as Func)
+                method.callRaw(li.subList(1, li.size), defs)
+            }
+            defs.addMethod(apply)
+
             val size = createNativeMethod(
                 { (li) ->
                     if (li is ContainerType)
@@ -156,11 +159,10 @@ class NativeMethod(annotations: List<Annotation>, params: NamedParams, val behav
             )
             defs.addMethod(unwrap)
 
-            val wrap = createNativeMethod(
-                { _ -> defs.variables.toM() },
+            val wrap = NativeMethod(
                 emptyList(),
-                "wrap"
-            )
+                Params.of("wrap")
+            ) { _ -> defs.variables.toM() }
             defs.addMethod(wrap)
         }
 
