@@ -1,8 +1,11 @@
 package org.llesha.expr
 
+import org.llesha.Utils
 import org.llesha.eval.Definitions
+import org.llesha.eval.Method
 import org.llesha.exception.EvalException
 import org.llesha.type.ContainerType
+import org.llesha.type.MLazy
 import org.llesha.type.Type
 
 /**
@@ -27,7 +30,7 @@ class ReturnStatement(val value: Expr) : Statement() {
     override fun toString(): String = "return $value"
 
     override fun eval(defs: Definitions): Expr {
-         return value.eval(defs)
+        return value.eval(defs)
     }
 
 }
@@ -76,10 +79,7 @@ data class Call(val fnName: String, val args: List<Expr>) : Statement() {
 
     override fun eval(defs: Definitions): Expr {
         val method = defs.method(fnName, args.size)
-        val evaluatedArgs = args.map { it.eval(defs) }
-        val methodDefs = defs.addArgs(evaluatedArgs, method)
-
-        return method.call(evaluatedArgs, methodDefs)
+        return Utils.evalMethod(method, args, defs)
     }
 }
 

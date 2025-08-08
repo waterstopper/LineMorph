@@ -1,6 +1,5 @@
 package org.llesha.eval
 
-import org.llesha.AnnotationProcessor
 import org.llesha.expr.Annotation
 import org.llesha.expr.Expr
 import org.llesha.expr.Statement
@@ -22,7 +21,9 @@ class UserMethod(
     }
 
     override fun callRaw(args: List<Expr>, defs: Definitions): Expr {
-        return body.map { it.eval(defs) }.last()
+        // TODO rm other addArgs somehow: unify it
+        val methodDefs = defs.addArgs(args, this)
+        return body.map { it.eval(methodDefs) }.last()
     }
 
     override fun eval(defs: Definitions): Expr {
@@ -32,15 +33,14 @@ class UserMethod(
 
     companion object {
         fun cons(
-            name: String,
-            parameters: List<String>,
+            parameters: Params,
             annotations: List<Annotation>,
             body: List<Statement>
         ): UserMethod {
             val annotationsMap = annotations.associateBy { it.name }
             val params = if (annotationsMap.containsKey("AsText")) {
-                AnnotationProcessor.processAsText(name, parameters, annotationsMap["AsText"]!!)
-            } else Params(listOf(name) + parameters)
+                parameters.asNamed(annotationsMap["AsText"]!!.args)
+            } else parameters
 
             return UserMethod(annotations, body, params)
         }

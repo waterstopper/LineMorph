@@ -9,7 +9,7 @@ actual fun write(path: String, data: String) {
 }
 
 actual fun delete(path: String): Boolean {
-    return File(path).delete();
+    return File(path).delete()
 }
 
 actual fun exists(path: String): Boolean {

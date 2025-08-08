@@ -6,7 +6,9 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
+import org.llesha.Utils.listWithHead
 import org.llesha.eval.UserMethod
+import org.llesha.eval.Vararg
 import org.llesha.expr.*
 import org.llesha.type.*
 
@@ -98,12 +100,20 @@ class MorphGrammar : Grammar<List<Expr>>() {
 
     private val type: Parser<Type> by date or jsonValue
 
-    private val args by optional(separated(parser(this::expr), commaToken)) map { it?.terms ?: emptyList() }
+
+    private val defArgs: Parser<List<Expr>> by (optional(separated(parser(this::expr), commaToken))
+            and optional(-commaToken and varargParam)) map {
+        val res = it.t1?.terms?.toMutableList() ?: mutableListOf()
+        it.t2?.text?.let { vararg -> res.add(Vararg(vararg)) }
+        res
+    }
+    private val oneArg: Parser<List<Expr>> by varargParam map { listOf(Vararg(it.text)) }
+    private val args: Parser<List<Expr>> by oneArg or defArgs
 
     private val annotation by -atToken and ident and -lParenToken and args and -rParenToken map {
         Annotation(
             it.t1.text,
-            Utils.argsToParams(it.t2)
+            Utils.refsToString(it.t2)
         )
     }
     private val call: Parser<Call> by ident and lParenToken and optional(args) and rParenToken map {
@@ -114,7 +124,7 @@ class MorphGrammar : Grammar<List<Expr>>() {
             -lBraceToken and -optional(statementSeparator) and
             optional(separated(parser(this::statement), statementSeparator)) and
             -optional(statementSeparator) and -rBraceToken map {
-        UserMethod.cons(it.t2.text, Utils.argsToParams(it.t3), it.t1, it.t4?.terms ?: emptyList())
+        UserMethod.cons(Utils.argsToParams(it.t3.listWithHead(Ref(it.t2.text))), it.t1, it.t4?.terms ?: emptyList())
     }
 
     private val assignment: Parser<Assignment> by ident and -assignToken and parser(this::expr) map

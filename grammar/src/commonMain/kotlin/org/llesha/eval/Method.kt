@@ -11,6 +11,12 @@ abstract class Method(annotations: List<Annotation>, val params: Params) : State
 
     abstract fun callRaw(args: List<Expr>, defs: Definitions): Expr
 
+    fun isLazy(): Boolean {
+        if(signature() == "lazy@2")
+            return true
+        return annotations.containsKey("LazyArgs")
+    }
+
     fun call(args: List<Expr>, defs: Definitions): Expr {
         val argList = annotations["ArgList"]
         if (argList != null) {

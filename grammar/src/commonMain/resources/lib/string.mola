@@ -1,4 +1,10 @@
 @Native()
+fn indexed(cont)
+
+@Native()
+fn for-each(func, cont, *args)
+
+@Native()
 @AsText(in)
 @ArgList(text)
 fn find(arg, text) {}
@@ -9,7 +15,7 @@ fn json(arg) {}
 
 @Native()
 @ArgList()
-fn parseJson(json) {}
+fn parse-json(json) {}
 
 @Native()
 @AsText(by)

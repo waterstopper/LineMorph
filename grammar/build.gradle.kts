@@ -50,9 +50,13 @@ kotlin {
         }
         val jsTest by getting
     }
+
+}
+
+kotlin {
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")
-        apiVersion.set(KotlinVersion.KOTLIN_2_2)
-        languageVersion.set(KotlinVersion.KOTLIN_2_2)
+        apiVersion.set(KotlinVersion.KOTLIN_2_1)
+        languageVersion.set(KotlinVersion.KOTLIN_2_1)
     }
 }

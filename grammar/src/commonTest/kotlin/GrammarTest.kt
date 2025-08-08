@@ -30,6 +30,13 @@ class GrammarTest {
     }
 
     @Test
+    fun varargTest() {
+        val input = """fn vararg(*abc) {}""".trimIndent()
+
+        val res = TestFactory.parseWithLoad(input)
+    }
+
+    @Test
     fun testGrammar() {
         val input = """
             # a

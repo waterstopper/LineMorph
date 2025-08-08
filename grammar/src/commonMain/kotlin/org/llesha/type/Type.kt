@@ -1,5 +1,6 @@
 package org.llesha.type
 
+import org.llesha.Utils
 import org.llesha.eval.Definitions
 import org.llesha.exception.EvalException
 import org.llesha.expr.Expr
@@ -12,27 +13,27 @@ abstract class Type : Expr() {
     override fun eval(defs: Definitions): Expr = this
 }
 
-abstract class ContainerType() : Type() {
+abstract class ContainerType : Type() {
     abstract fun index(index: Expr): Expr
     abstract fun size(): Int
+    abstract fun iterable(): Iterable<Any>
 }
 
-class MBool(val bool: Boolean) : Type() {
+data class MBool(val bool: Boolean) : Type() {
     override fun toString(): String = bool.toString()
 
 }
 
-class MNumber(val number: Long) : Type() {
+data class MNumber(val number: Long) : Type() {
     override fun toString() = number.toString()
 
 }
 
-class MDate(val date: Instant) : Type() {
+data class MDate(val date: Instant) : Type() {
     override fun toString(): String = date.toString()
-
 }
 
-class MTime(val date: Instant) : Type() {
+data class MTime(val date: Instant) : Type() {
     override fun toString(): String = date.toString()
 }
 
@@ -47,6 +48,7 @@ data class MString(val string: String) : ContainerType() {
     }
 
     override fun size(): Int = string.length
+    override fun iterable(): Iterable<Any> = string.asIterable()
 
     override fun toStr() = """"$string""""
 }
@@ -63,6 +65,13 @@ data class MList(val list: List<Expr>) : ContainerType() {
     }
 
     override fun size(): Int = list.size
+    override fun iterable(): Iterable<Any> = list.asIterable()
+
+    companion object {
+        fun of(vararg args: Expr): MList {
+            return MList(args.toList())
+        }
+    }
 }
 
 class MMap(val map: Map<String, Type>) : ContainerType() {
@@ -73,16 +82,35 @@ class MMap(val map: Map<String, Type>) : ContainerType() {
         map.entries.joinToString(prefix = "{", postfix = "}", separator = ",") { """"${it.key}":${it.value.toStr()}""" }
 
     override fun index(index: Expr): Expr {
-        when (index) {
-            is MNumber -> return map[index.number.toString()] ?: throw EvalException("Key $index not found in $this")
-            is MString -> return map[index.string] ?: throw EvalException("Key $index not found in $this")
+        return when (index) {
+            is MNumber -> map[index.number.toString()] ?: throw EvalException("Key $index not found in $this")
+            is MString -> map[index.string] ?: throw EvalException("Key $index not found in $this")
             else -> throw EvalException("Expected number or string as map key")
         }
     }
 
     override fun size(): Int = map.size
+    override fun iterable(): Iterable<Any> = map.entries.asIterable()
 }
 
-class Func(val name: String, val argNum: Int): Type() {
-    override fun toString(): String = "$name@$argNum"
+class Func(val name: String, val argNum: Int) : Type() {
+    override fun toString(): String = "$name@${argNum + 1}"
+
+    fun evalWithArgs(defs: Definitions, args: List<Expr>): Expr {
+        val method = defs.method(this)
+        return Utils.evalMethod(method, args, defs)
+    }
+}
+
+class MLazy(val expr: Expr) : Type() {
+    override fun toString(): String = expr.toString()
+
+    companion object {
+        fun cons(arg: Expr): MLazy {
+            if (arg !is MLazy) {
+                return MLazy(arg)
+            }
+            return arg
+        }
+    }
 }

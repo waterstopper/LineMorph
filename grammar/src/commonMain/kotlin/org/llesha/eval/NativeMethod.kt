@@ -2,11 +2,16 @@ package org.llesha.eval
 
 import org.llesha.AnnotationProcessor.init
 import org.llesha.AnnotationProcessor.withArgList
+import org.llesha.CastUtils.anyToM
+import org.llesha.CastUtils.asCont
+import org.llesha.CastUtils.asFunc
 import org.llesha.CastUtils.toBool
 import org.llesha.CastUtils.toM
 import org.llesha.CastUtils.toNum
 import org.llesha.Utils.compare
+import org.llesha.Utils.listWithHead
 import org.llesha.Utils.plus
+import org.llesha.Utils.subListOrEmpty
 import org.llesha.exception.EvalException
 import org.llesha.expr.Annotation
 import org.llesha.expr.Expr
@@ -81,6 +86,29 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
         }
 
         private fun loadString(defs: Definitions) {
+            val indexed = NativeMethod(
+                emptyList(),
+                Params.of("indexed", "cont")
+            ) { (cont) ->
+                when (val liOrStr = cont.asCont()) {
+                    is MString -> liOrStr.string.withIndex().map { MList.of(it.index.toM(), it.value.toM()) }.toM()
+                    is MList -> liOrStr.list.withIndex().map { MList.of(it.index.toM(), it.value) }.toM()
+                    else -> throw EvalException("Invalid cont: $liOrStr, expected String or List")
+                }
+            }
+            defs.addMethod(indexed)
+
+            val forEach = NativeMethod(
+                emptyList(),
+                VarargParams(listOf("for-each", "cont"), "*args")
+            ) { args ->
+                val fn = args[0].asFunc()
+                args[1].asCont().iterable().forEach { fn.evalWithArgs(defs,  args.subListOrEmpty(2).listWithHead(it.anyToM())) }
+                Void()
+            }
+            defs.addMethod(forEach)
+
+
             val find = createNativeMethod(
                 { (arg, text) -> MString(Regex(arg.toString()).find(text.toString())!!.value) },
                 init().withArgList("text"),
@@ -98,7 +126,7 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
             val parseJson = createNativeMethod(
                 { (li) -> read(li.toString()); Void() },
                 emptyList(),
-                "parseJson", "string"
+                "parse-json", "string"
             )
             defs.addMethod(parseJson)
 
@@ -113,18 +141,32 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
         }
 
         private fun loadNatives(defs: Definitions) {
-            val apply = NativeMethod(emptyList(), VarargParams(listOf("apply", "func"))) { li ->
-                val method = defs.method(li.first() as Func)
-                method.callRaw(li.subList(1, li.size), defs)
+            val apply = NativeMethod(emptyList(), VarargParams(listOf("apply", "func"), "args")) { li ->
+                (li.first() as Func).evalWithArgs(defs, li.subList(1, li.size))
             }
             defs.addMethod(apply)
+
+            val ifElse = NativeMethod(
+                emptyList(),
+                Params.of("if-else", "cond", "ifTrue", "ifFalse")
+            ) { (cond, ifTrue, ifFalse) ->
+                if (cond.toBool()) ifTrue else ifFalse
+            }
+            defs.addMethod(ifElse)
+
+            val lazy = NativeMethod(
+                emptyList(),
+                Params.of("lazy", "arg")
+            ) { (arg) ->
+                MLazy.cons(arg)
+            }
+            defs.addMethod(lazy)
 
             val size = createNativeMethod(
                 { (li) ->
                     if (li is ContainerType)
-                        li.size()
+                        li.size().toM()
                     else throw EvalException("Cannot get size of value")
-                    Void()
                 },
                 emptyList(),
                 "size", "container"
@@ -164,6 +206,17 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
                 Params.of("wrap")
             ) { _ -> defs.variables.toM() }
             defs.addMethod(wrap)
+
+            val assert = NativeMethod(
+                emptyList(),
+                Params.of("assert", "bool")
+            ) { (bool) ->
+                if (!bool.toBool()) {
+                    throw EvalException("Assert failed")
+                }
+                Void()
+            }
+            defs.addMethod(assert)
         }
 
         private fun createAndAddBinary(

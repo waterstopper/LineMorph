@@ -2,6 +2,7 @@ package org.llesha
 
 import kotlinx.serialization.json.*
 import org.llesha.CastUtils.toM
+import org.llesha.eval.*
 import org.llesha.expr.Expr
 import org.llesha.expr.Ref
 import org.llesha.type.*
@@ -24,13 +25,21 @@ object Utils {
         return Instant.parse("${date}T00:00:00Z")
     }
 
-    fun argsToParams(args: List<Expr>): List<String> {
-        return args.map {
-            if (it !is Ref) {
-                throw IllegalArgumentException("Argument is not an identifier")
-            }
-            it.name
+    fun argsToParams(args: List<Expr>): Params {
+        if (args.isEmpty()) {
+            return Params(emptyList())
         }
+        if (args.last() is Vararg) {
+            return VarargParams(refsToString(args.subList(0, args.lastIndex)), (args.last() as Vararg).name)
+        }
+        return Params(refsToString(args))
+    }
+
+    fun refsToString(refs: List<Expr>): List<String> = refs.map {
+        if (it !is Ref) {
+            throw IllegalArgumentException("Argument is not an identifier")
+        }
+        it.name
     }
 
     fun Expr.compare(other: Expr): Int {
@@ -64,10 +73,10 @@ object Utils {
                 if (json.isString) {
                     return MString(json.content)
                 }
-                if (json.content.equals("true")) {
+                if (json.content == "true") {
                     return MBool(true)
                 }
-                if (json.content.equals("false")) {
+                if (json.content == "false") {
                     return MBool(false)
                 }
                 return MNumber(json.content.toLong())
@@ -103,5 +112,24 @@ object Utils {
             is MNumber -> MNumber(this.number.minus((other as MNumber).number))
             else -> throw IllegalArgumentException("Unsupported operation minus for types")
         }
+    }
+
+    fun <T> List<T>.subListOrEmpty(fromIndex: Int): List<T> {
+        if(lastIndex < fromIndex)
+            return mutableListOf()
+        return subList(fromIndex, size)
+    }
+
+    fun <T> List<T>.listWithHead(head: T): List<T> {
+        val res = mutableListOf(head)
+        res.addAll(this)
+        return res
+    }
+
+    fun evalMethod(method: Method, args: List<Expr>, defs: Definitions): Expr {
+        val evaluatedArgs = if (method.isLazy()) args.map { MLazy.cons(it) } else args.map { it.eval(defs) }
+        val methodDefs = defs.addArgs(evaluatedArgs, method)
+
+        return method.call(evaluatedArgs, methodDefs)
     }
 }

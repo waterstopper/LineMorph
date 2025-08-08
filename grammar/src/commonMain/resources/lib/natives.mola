@@ -1,5 +1,32 @@
 @Native()
-fn apply(signature, ...) {}
+fn apply(signature, *args) {}
+
+@Native()
+@LazyArgs()
+@AsText
+fn if-else(cond, ifTrue, ifFalse)
+
+@Native()
+@LazyArgs
+fn lazy(arg)
+
+@Native
+fn isLazy(arg)
+
+@Native
+fn isNumber(arg)
+
+@Native
+fn isString(arg)
+
+@Native
+fn isList(arg)
+
+@Native
+fn isMap(arg)
+
+@Native
+fn isBool(arg)
 
 @Native()
 fn size(container) {}
@@ -7,7 +34,7 @@ fn size(container) {}
 @Native()
 fn print(arg) {}
 
-@Native
+@Native()
 @AsText(by)
 fn filter(list, func)
 
@@ -18,3 +45,6 @@ fn unwrap(json)
 # wrap all current refs into json object
 @Native
 fn wrap()
+
+@Native()
+fn assert(bool) {}
