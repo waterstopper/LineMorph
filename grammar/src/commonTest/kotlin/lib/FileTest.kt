@@ -13,12 +13,12 @@ class FileTest {
             path <- "a.txt"
             content <- "abc"
 
-            assert(not(exists(path)))
+            assert-not-exists(path)
             write(content, path)
-            assert(eq(content, read(path)))
-            assert(exists(path))
+            assert-eq(content, read(path))
+            assert-exists(path)
             delete(path)
-            assert(not(exists(path)))
+            assert-not-exists(path)
         """.trimIndent()
 
         TestFactory.parseWithLoad(input)

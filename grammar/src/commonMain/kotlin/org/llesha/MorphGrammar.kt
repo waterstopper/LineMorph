@@ -117,7 +117,14 @@ class MorphGrammar : Grammar<List<Expr>>() {
         )
     }
     private val call: Parser<Call> by ident and lParenToken and optional(args) and rParenToken map {
-        Call(it.t1.text, it.t3 ?: emptyList())
+        val callNames = it.t1.text.split("-").reversed()
+        var call = Call(callNames.first(), it.t3 ?: emptyList())
+        var i = 1
+        while(i < callNames.size) {
+            call = Call(callNames[i], listOf(call))
+            i++
+        }
+        call
     }
     private val function: Parser<UserMethod> by zeroOrMore(annotation and -optional(statementSeparator)) and
             -fnToken and ident and -lParenToken and args and -rParenToken and

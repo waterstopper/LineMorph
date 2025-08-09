@@ -120,7 +120,7 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
 
             val forEach = NativeMethod(
                 emptyList(),
-                VarargParams(listOf("for-each", "cont"), "*args")
+                VarargParams(listOf("forEach", "cont"), "*args")
             ) { args ->
                 val fn = args[0].asFunc()
                 args[1].asCont().iterable()
@@ -149,7 +149,7 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
             val parseJson = createNativeMethod(
                 { (li) -> Utils.parseJson(li.toString()) },
                 emptyList(),
-                "parse-json", "string"
+                "parseJson", "string"
             )
             defs.addMethod(parseJson)
 
@@ -179,7 +179,7 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
 
             val ifElse = NativeMethod(
                 emptyList(),
-                Params.of("if-else", "cond", "ifTrue", "ifFalse")
+                Params.of("ifElse", "cond", "ifTrue", "ifFalse")
             ) { (cond, ifTrue, ifFalse) ->
                 if (cond.toBool()) ifTrue else ifFalse
             }

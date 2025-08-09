@@ -4,7 +4,7 @@ fn apply(signature, *args) {}
 @Native()
 @LazyArgs()
 @AsText
-fn if-else(cond, ifTrue, ifFalse)
+fn ifElse(cond, ifTrue, ifFalse)
 
 @Native()
 @LazyArgs

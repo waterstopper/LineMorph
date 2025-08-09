@@ -65,6 +65,16 @@ fn find(text, toFind) {}
 3. yyyy-mm-dd/DDMMYYYY
 4. word
 
+## Pipe-functions:
+You can pipe in the output of one function to the next with a hyphen, just like that:
+
+```shell
+assert-eq(1,1)
+# is similar to
+assert(eq(1,1))
+```
+
+Currently all functions except first executed are unary in this case.
 
 # TODO
 1. Tests 1h

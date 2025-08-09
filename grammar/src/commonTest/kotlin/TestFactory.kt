@@ -1,6 +1,5 @@
 import org.llesha.Pipeline
 import org.llesha.expr.Expr
-import kotlin.test.DefaultAsserter.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -8,21 +7,23 @@ import kotlin.test.assertTrue
  */
 object TestFactory {
     fun parseWithLoad(input: String): Expr {
-        return Pipeline.evalWithPos("""
+        return Pipeline.evalWithPos(
+            """
             load("file")
             load("lib")
             load("natives")
             load("ops")
             load("string")
             
-        """.trimIndent()+input)
+        """.trimIndent() + input
+        )
     }
 
     fun failWithLoad(input: String, msg: String) {
-       try {
-           parseWithLoad(input)
-       } catch(e: Exception) {
-           assertTrue(e.message!!.contains(msg))
-       }
+        try {
+            parseWithLoad(input)
+        } catch (e: Exception) {
+            assertTrue(e.message!!.contains(msg))
+        }
     }
 }

@@ -2,7 +2,7 @@
 fn indexed(cont)
 
 @Native()
-fn for-each(func, cont, *args)
+fn forEach(func, cont, *args)
 
 @Native()
 @AsText(in)

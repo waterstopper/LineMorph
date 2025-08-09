@@ -15,8 +15,10 @@ class NativesTest {
     @Test
     fun testIfElse() {
         val input = """
-            b <- if-else(true, 1, 2)
-            assert(eq())
+            b <- ifElse(true, 1, 2)
+            assert-eq(1, b)
+            c <- ifElse(false, 1, 2)
+            assert-eq(2, c)
         """.trimIndent()
         TestFactory.parseWithLoad(input)
     }
@@ -29,17 +31,17 @@ class NativesTest {
                 print(li)
                 size <- li[0]
                 arg <- li[1]
-                for-each(testCase@2, li[1], li[0])
+                forEach(testCase@2, li[1], li[0])
             }
 
             fn testCase(case, size) {
                 print(case)
-                assert(eq(size, size(case)))
+                assert-eq(size, size(case))
             }
 
             cases <- [["", [], {}], ["a", [1], [""], {"a":[1,2, {}]}], ["[]", "{}"], ["abc", [{}, {}, {}]], [{"a":[], "b":[], "c":{"d":1}, "e":{}}]]
             withIndex <- indexed(cases)
-            for-each(testCases@1, withIndex)
+            forEach(testCases@1, withIndex)
         """.trimIndent()
 
         TestFactory.parseWithLoad(inp)
@@ -57,7 +59,7 @@ class NativesTest {
             @ArgList(case)
             fn testCase(case, size) {
                 print(case)
-                assert(eq(size, size(case)))
+                assert-eq(size, size(case))
             }
 
             cases <- [["", [], {}], ["a", [1], [""], {"a":[1,2, {}]}], ["[]", "{}"], ["abc", [{}, {}, {}]], [{"a":[], "b":[], "c":{"d":1}, "e":{}}]]
@@ -75,46 +77,46 @@ class NativesTest {
                 return arg
             }
             
-            assert(isLazy(lazy(1)))
-            assert(isLazy(lazy("")))
-            assert(isLazy(lazy([])))
-            assert(isLazy(lazy(identity({}))))
-            assert(isLazy(identity(lazy(identity({})))))
+            assert-isLazy-lazy(1)
+            assert-isLazy-lazy("")
+            assert-isLazy-lazy([])
+            assert-isLazy-lazy-identity({})
+            assert-isLazy-identity-lazy-identity({})
             
-            assert(isNumber(1))
-            assert(isNumber(100))
-            assert(isNumber([1][0]))
-            assert(isNumber({"a":1}["a"]))
-            assert(isNumber(identity({"a":1}["a"])))
+            assert-isNumber(1)
+            assert-isNumber(100)
+            assert-isNumber([1][0])
+            assert-isNumber({"a":1}["a"])
+            assert-isNumber-identity({"a":1}["a"])
             
-            assert(isString(""))
-            assert(isString("∆ª˚ª•ª∆“…∫¶§ƒ"))
-            assert(isString(["str"][0]))
-            assert(isString({"a":"b"}["a"]))
-            assert(isString(identity({"a":"b"}["a"])))
+            assert-isString("")
+            assert-isString("∆ª˚ª•ª∆“…∫¶§ƒ")
+            assert-isString(["str"][0])
+            assert-isString({"a":"b"}["a"])
+            assert-isString-identity({"a":"b"}["a"])
             
-            assert(isList([]))
-            assert(isList([1,2,3]))
-            assert(isList([[],1,2][0]))
-            assert(isList({"a":[1,2,3]}["a"]))
-            assert(isList(identity({"a":[1,2,3]}["a"])))
+            assert-isList([])
+            assert-isList([1,2,3])
+            assert-isList([[],1,2][0])
+            assert-isList({"a":[1,2,3]}["a"])
+            assert-isList-identity({"a":[1,2,3]}["a"])
 
-            assert(isMap({}))
-            assert(isMap({"a":1, "b": []}))
-            assert(isMap([{},1,2][0]))
-            assert(isMap({"a":{}}["a"]))
-            assert(isMap(identity({"a":{}}["a"])))
+            assert-isMap({})
+            assert-isMap({"a":1, "b": []})
+            assert-isMap([{},1,2][0])
+            assert-isMap({"a":{}}["a"])
+            assert-isMap-identity({"a":{}}["a"])
             
-            assert(isBool(true))
-            assert(isBool(false))
-            assert(isBool([true,1,2][0]))
-            assert(isBool({"a":false}["a"]))
-            assert(isBool(identity({"a":false}["a"])))
+            assert-isBool(true)
+            assert-isBool(false)
+            assert-isBool([true,1,2][0])
+            assert-isBool({"a":false}["a"])
+            assert-isBool-identity({"a":false}["a"])
             
-            assert(isFunc(abc@2))
-            assert(isFunc(identity@1))
-            assert(isFunc(identity@*))
-            assert(isFunc(identity(identity@*)))
+            assert-isFunc(abc@2)
+            assert-isFunc(identity@1)
+            assert-isFunc(identity@*)
+            assert-isFunc-identity(identity@*)
             """.trimIndent()
 
         TestFactory.parseWithLoad(input)
@@ -130,11 +132,11 @@ class NativesTest {
         val input = """
             str <- "abc"
             indexed <- indexed(str)
-            assert(eq([[0,"a"],[1,"b"],[2,"c"]],indexed))
+            assert-eq([[0,"a"],[1,"b"],[2,"c"]],indexed)
             
             li <- [0,1,2]
             indexedLi <- indexed(li)
-            assert(eq([[0,0],[1,1],[2,2]],indexedLi))
+            assert-eq([[0,0],[1,1],[2,2]],indexedLi)
         """.trimIndent()
 
         TestFactory.parseWithLoad(input)
@@ -152,8 +154,8 @@ class NativesTest {
         val input = """
             fn parse(arg) {
                 parsed <- json(arg)
-                unparsed <- parse-json(parsed)
-                assert(eq(arg, unparsed))
+                unparsed <- parseJson(parsed)
+                assert-eq(arg, unparsed)
             }
             parse(true)
             parse(false)
