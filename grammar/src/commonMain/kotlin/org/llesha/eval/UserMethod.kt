@@ -21,9 +21,7 @@ class UserMethod(
     }
 
     override fun callRaw(args: List<Expr>, defs: Definitions): Expr {
-        // TODO rm other addArgs somehow: unify it
-        val methodDefs = defs.addArgs(args, this)
-        return body.map { it.eval(methodDefs) }.last()
+        return body.map { it.eval(defs) }.last()
     }
 
     override fun eval(defs: Definitions): Expr {

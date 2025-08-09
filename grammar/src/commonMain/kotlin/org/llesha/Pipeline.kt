@@ -1,6 +1,9 @@
 package org.llesha
 
 import com.github.h0tk3y.betterParse.grammar.parseToEnd
+import com.github.h0tk3y.betterParse.st.LiftToSyntaxTreeOptions
+import com.github.h0tk3y.betterParse.st.SyntaxTree
+import com.github.h0tk3y.betterParse.st.liftToSyntaxTreeGrammar
 import org.llesha.eval.Definitions
 import org.llesha.expr.Expr
 
@@ -15,7 +18,6 @@ object Pipeline {
     }
 
     fun eval(input: String): Expr {
-        val grammar = MorphGrammar()
         val ast = grammar.parseToEnd(input)
         val defs = Definitions.init()
 
@@ -23,6 +25,24 @@ object Pipeline {
             val statementEval = it.eval(defs)
             println(statementEval)
             statementEval
+        }
+        return result.last()
+    }
+
+    fun evalWithPos(input: String): Expr {
+        val ast: SyntaxTree<List<Expr>> = grammar
+            .liftToSyntaxTreeGrammar(LiftToSyntaxTreeOptions(retainSeparators = false))
+            .parseToEnd(input)
+        val defs = Definitions.init()
+
+        val result = ast.item.withIndex().map {
+            try {
+                val statementEval = it.value.eval(defs)
+                println(it.value)
+                statementEval
+            } catch (e: Exception) {
+                throw Exception("${e.message} at ${ast.children[it.index].range}: ${input.substring(ast.children[it.index].range)}", e)
+            }
         }
         return result.last()
     }

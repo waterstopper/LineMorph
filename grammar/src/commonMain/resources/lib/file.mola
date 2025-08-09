@@ -10,3 +10,11 @@ fn load(codePath) {}
 @AsText(to)
 @ArgList()
 fn write(arg, path) {}
+
+@Native()
+@ArgList()
+fn exists(path) {}
+
+@Native()
+@ArgList()
+fn delete(path) {}

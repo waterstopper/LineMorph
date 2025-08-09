@@ -2,10 +2,8 @@ package org.llesha.expr
 
 import org.llesha.Utils
 import org.llesha.eval.Definitions
-import org.llesha.eval.Method
 import org.llesha.exception.EvalException
 import org.llesha.type.ContainerType
-import org.llesha.type.MLazy
 import org.llesha.type.Type
 
 /**

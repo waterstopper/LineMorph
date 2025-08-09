@@ -1,5 +1,6 @@
 package org.llesha.type
 
+import org.llesha.CastUtils.toM
 import org.llesha.Utils
 import org.llesha.eval.Definitions
 import org.llesha.exception.EvalException
@@ -16,7 +17,7 @@ abstract class Type : Expr() {
 abstract class ContainerType : Type() {
     abstract fun index(index: Expr): Expr
     abstract fun size(): Int
-    abstract fun iterable(): Iterable<Any>
+    abstract fun iterable(): Iterable<Expr>
 }
 
 data class MBool(val bool: Boolean) : Type() {
@@ -48,7 +49,7 @@ data class MString(val string: String) : ContainerType() {
     }
 
     override fun size(): Int = string.length
-    override fun iterable(): Iterable<Any> = string.asIterable()
+    override fun iterable(): Iterable<Expr> = string.map { it.toM() }.asIterable()
 
     override fun toStr() = """"$string""""
 }
@@ -65,7 +66,7 @@ data class MList(val list: List<Expr>) : ContainerType() {
     }
 
     override fun size(): Int = list.size
-    override fun iterable(): Iterable<Any> = list.asIterable()
+    override fun iterable(): Iterable<Expr> = list.asIterable()
 
     companion object {
         fun of(vararg args: Expr): MList {
@@ -74,7 +75,7 @@ data class MList(val list: List<Expr>) : ContainerType() {
     }
 }
 
-class MMap(val map: Map<String, Type>) : ContainerType() {
+data class MMap(val map: Map<String, Type>) : ContainerType() {
     override fun toString(): String =
         map.entries.joinToString(prefix = "{", postfix = "}", separator = ",") { """"${it.key}":${it.value}""" }
 
@@ -90,7 +91,7 @@ class MMap(val map: Map<String, Type>) : ContainerType() {
     }
 
     override fun size(): Int = map.size
-    override fun iterable(): Iterable<Any> = map.entries.asIterable()
+    override fun iterable(): Iterable<Expr> = map.entries.map { MList.of(it.key.toM(), it.value) }.asIterable()
 }
 
 class Func(val name: String, val argNum: Int) : Type() {

@@ -115,7 +115,7 @@ object Utils {
     }
 
     fun <T> List<T>.subListOrEmpty(fromIndex: Int): List<T> {
-        if(lastIndex < fromIndex)
+        if (lastIndex < fromIndex)
             return mutableListOf()
         return subList(fromIndex, size)
     }
@@ -128,8 +128,18 @@ object Utils {
 
     fun evalMethod(method: Method, args: List<Expr>, defs: Definitions): Expr {
         val evaluatedArgs = if (method.isLazy()) args.map { MLazy.cons(it) } else args.map { it.eval(defs) }
-        val methodDefs = defs.addArgs(evaluatedArgs, method)
+        val argList = method.annotations["ArgList"]
 
-        return method.call(evaluatedArgs, methodDefs)
+        if (argList != null) {
+            val listArg = argList.args.first()
+            val listIndex = method.params.names().indexOf(listArg)
+            if (evaluatedArgs[listIndex] is MList) {
+                return MList((evaluatedArgs[listIndex] as MList).list.map {
+                    method.call(evaluatedArgs.replaceElem(listIndex, it), defs)
+                })
+            }
+        }
+
+        return method.call(evaluatedArgs, defs)
     }
 }

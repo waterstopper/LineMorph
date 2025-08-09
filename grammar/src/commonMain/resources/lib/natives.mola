@@ -28,6 +28,9 @@ fn isMap(arg)
 @Native
 fn isBool(arg)
 
+@Native
+fn isFunc(arg)
+
 @Native()
 fn size(container) {}
 

@@ -9,24 +9,17 @@ import org.llesha.type.MList
 abstract class Method(annotations: List<Annotation>, val params: Params) : Statement() {
     val annotations: Map<String, Annotation> = annotations.associateBy { it.name }
 
-    abstract fun callRaw(args: List<Expr>, defs: Definitions): Expr
+    protected abstract fun callRaw(args: List<Expr>, defs: Definitions): Expr
 
     fun isLazy(): Boolean {
-        if(signature() == "lazy@2")
+        if (signature() == "lazy@2")
             return true
         return annotations.containsKey("LazyArgs")
     }
 
     fun call(args: List<Expr>, defs: Definitions): Expr {
-        val argList = annotations["ArgList"]
-        if (argList != null) {
-            val listArg = argList.args.first()
-            val listIndex = params.names().indexOf(listArg)
-            if (args[listIndex] is MList) {
-                return MList((args[listIndex] as MList).list.map { callRaw(args.replaceElem(listIndex, it), defs) })
-            }
-        }
-        return callRaw(args, defs)
+        val methodDefs = defs.addArgs(args, this)
+        return callRaw(args, methodDefs)
     }
 
     override fun eval(defs: Definitions): Expr {

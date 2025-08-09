@@ -8,6 +8,7 @@ import org.llesha.CastUtils.asFunc
 import org.llesha.CastUtils.toBool
 import org.llesha.CastUtils.toM
 import org.llesha.CastUtils.toNum
+import org.llesha.Utils
 import org.llesha.Utils.compare
 import org.llesha.Utils.listWithHead
 import org.llesha.Utils.plus
@@ -16,6 +17,8 @@ import org.llesha.exception.EvalException
 import org.llesha.expr.Annotation
 import org.llesha.expr.Expr
 import org.llesha.expr.Void
+import org.llesha.native.delete
+import org.llesha.native.exists
 import org.llesha.native.read
 import org.llesha.native.write
 import org.llesha.type.*
@@ -48,6 +51,7 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
         }
 
         private fun loadOps(defs: Definitions) {
+            createAndAddUnary("not", { (a) -> (!a.toBool()).toM() }, defs)
             createAndAddBinary("and", { (a, b) -> (a.toBool() && b.toBool()).toM() }, defs, "by")
             createAndAddBinary("or", { (a, b) -> (a.toBool() || b.toBool()).toM() }, defs, "by")
             createAndAddBinary("eq", { (a, b) -> (a == b).toM() }, defs)
@@ -74,11 +78,27 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
             defs.addMethod(write)
 
             val read = createNativeMethod(
-                { (li) -> MString(read(li.toString())) },
+                { (li) ->
+                    println(read(li.toString()))
+                    MString(read(li.toString())) },
                 emptyList(),
                 "read", "path"
             )
             defs.addMethod(read)
+
+            val exists = createNativeMethod(
+                { (path) -> exists(path.toString()).toM() },
+                emptyList(),
+                "exists", "path"
+            )
+            defs.addMethod(exists)
+
+            val delete = createNativeMethod(
+                { (path) -> delete(path.toString()).toM() },
+                emptyList(),
+                "delete", "path"
+            )
+            defs.addMethod(delete)
         }
 
         private fun loadLib(defs: Definitions) {
@@ -103,7 +123,8 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
                 VarargParams(listOf("for-each", "cont"), "*args")
             ) { args ->
                 val fn = args[0].asFunc()
-                args[1].asCont().iterable().forEach { fn.evalWithArgs(defs,  args.subListOrEmpty(2).listWithHead(it.anyToM())) }
+                args[1].asCont().iterable()
+                    .forEach { fn.evalWithArgs(defs, args.subListOrEmpty(2).listWithHead(it.anyToM())) }
                 Void()
             }
             defs.addMethod(forEach)
@@ -117,14 +138,16 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
             defs.addMethod(find)
 
             val json = createNativeMethod(
-                { (li) -> read(li.toString()); Void() },
+                { (li) ->
+                    li.toStr().toM()
+                },
                 emptyList(),
                 "json", "arg"
             )
             defs.addMethod(json)
 
             val parseJson = createNativeMethod(
-                { (li) -> read(li.toString()); Void() },
+                { (li) -> Utils.parseJson(li.toString()) },
                 emptyList(),
                 "parse-json", "string"
             )
@@ -141,6 +164,14 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
         }
 
         private fun loadNatives(defs: Definitions) {
+            createAndAddUnary("isLazy", { (arg) -> (arg is MLazy).toM() }, defs)
+            createAndAddUnary("isNumber", { (arg) -> (arg is MNumber).toM() }, defs)
+            createAndAddUnary("isString", { (arg) -> (arg is MString).toM() }, defs)
+            createAndAddUnary("isList", { (arg) -> (arg is MList).toM() }, defs)
+            createAndAddUnary("isMap", { (arg) -> (arg is MMap).toM() }, defs)
+            createAndAddUnary("isBool", { (arg) -> (arg is MBool).toM() }, defs)
+            createAndAddUnary("isFunc", { (arg) -> (arg is Func).toM() }, defs)
+
             val apply = NativeMethod(emptyList(), VarargParams(listOf("apply", "func"), "args")) { li ->
                 (li.first() as Func).evalWithArgs(defs, li.subList(1, li.size))
             }
@@ -163,11 +194,7 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
             defs.addMethod(lazy)
 
             val size = createNativeMethod(
-                { (li) ->
-                    if (li is ContainerType)
-                        li.size().toM()
-                    else throw EvalException("Cannot get size of value")
-                },
+                { (li) -> li.asCont().size().toM() },
                 emptyList(),
                 "size", "container"
             )
@@ -180,14 +207,15 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
             )
             defs.addMethod(print)
 
-            val filter = createNativeMethod(
-                { (li, func) ->
-                    //
-                    Void()
-                },
+
+            val filter = NativeMethod(
                 emptyList(),
-                "filter", "list", "by", "func"
-            )
+                VarargParams(listOf("filter","func", "cont"), "*args"),
+            ) { args ->
+                val fn = args[0].asFunc()
+                args[1].asCont().iterable().filter { fn.evalWithArgs(defs, args.subListOrEmpty(2)
+                    .listWithHead(it.anyToM())).toBool() }.toM()
+            }
             defs.addMethod(filter)
 
             val unwrap = createNativeMethod(
@@ -217,6 +245,15 @@ class NativeMethod(annotations: List<Annotation>, params: Params, val behavior: 
                 Void()
             }
             defs.addMethod(assert)
+        }
+
+        private fun createAndAddUnary(
+            name: String,
+            behavior: (List<Expr>) -> Expr,
+            defs: Definitions
+        ) {
+            val method = NativeMethod(emptyList(), Params.of(name, "arg"), behavior)
+            defs.addMethod(method)
         }
 
         private fun createAndAddBinary(

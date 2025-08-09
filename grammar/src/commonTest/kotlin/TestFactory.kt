@@ -1,12 +1,14 @@
 import org.llesha.Pipeline
 import org.llesha.expr.Expr
+import kotlin.test.DefaultAsserter.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * @author al.kononov
  */
 object TestFactory {
     fun parseWithLoad(input: String): Expr {
-        return Pipeline.eval("""
+        return Pipeline.evalWithPos("""
             load("file")
             load("lib")
             load("natives")
@@ -14,5 +16,13 @@ object TestFactory {
             load("string")
             
         """.trimIndent()+input)
+    }
+
+    fun failWithLoad(input: String, msg: String) {
+       try {
+           parseWithLoad(input)
+       } catch(e: Exception) {
+           assertTrue(e.message!!.contains(msg))
+       }
     }
 }
