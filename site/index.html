@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" style="background-color: var(--bg-color);">
+
+<head>
+    <meta charset="utf-8">
+    <title> MorphLang Interpreter </title>
+
+    <meta name="author" content="Aleksey Kononov">
+    <meta name="description" content=">MorphLang interpreter">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/elements.css">
+</head>
+
+<body>
+<header id="main-title">
+    <h1>MorphLang interpreter</h1>
+</header>
+<label for="code"></label><textarea id="code" style="width: 300px; height: 300px"></textarea>
+<div>
+    <button id="eval">eval</button>
+</div>
+<div>
+    <span id="stdout"></span>
+</div>
+<div>
+    <span id="stderr" style="color: darkred"></span>
+</div>
+<p style="white-space: pre">
+    Currently this works for unary functions. However, functions can return more than one thing, therefore this
+    mechanism can work for multi-argument functions =)
+
+    Some code like this:
+    <code>
+    fn max(a, b) {
+        return ifElse(geq(a, b), a, b)
+    }
+
+    fn multiOutput(a, b) {
+        return a, b
+    }
+
+    # and we can do then:
+    max-multiOutput(1, 2) # gets 2
+    </code>
+</p>
+
+<script type="module" src="js/index.js"></script>
+<script type="module" src="js/interpreter/MorphLang.js"></script>
+</body>
+
+</html>
