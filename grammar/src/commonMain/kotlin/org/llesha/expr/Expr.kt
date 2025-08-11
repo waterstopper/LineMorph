@@ -5,10 +5,14 @@ import org.llesha.eval.Definitions
 import org.llesha.exception.EvalException
 import org.llesha.type.ContainerType
 import org.llesha.type.Type
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
 
 /**
  * @author al.kononov
  */
+@OptIn(ExperimentalJsExport::class)
+@JsExport
 abstract class Expr {
     open fun toStr() = toString()
     abstract fun eval(defs: Definitions): Expr

@@ -6,10 +6,14 @@ import com.github.h0tk3y.betterParse.st.SyntaxTree
 import com.github.h0tk3y.betterParse.st.liftToSyntaxTreeGrammar
 import org.llesha.eval.Definitions
 import org.llesha.expr.Expr
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
 
 /**
  * @author al.kononov
  */
+@OptIn(ExperimentalJsExport::class)
+@JsExport
 object Pipeline {
     val grammar = MorphGrammar()
 
@@ -41,7 +45,10 @@ object Pipeline {
                 println(it.value)
                 statementEval
             } catch (e: Exception) {
-                throw Exception("${e.message} at ${ast.children[it.index].range}: ${input.substring(ast.children[it.index].range)}", e)
+                throw Exception(
+                    "${e.message} at ${ast.children[it.index].range}: ${input.substring(ast.children[it.index].range)}",
+                    e
+                )
             }
         }
         return result.last()

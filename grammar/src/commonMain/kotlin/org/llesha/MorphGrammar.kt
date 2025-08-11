@@ -120,7 +120,7 @@ class MorphGrammar : Grammar<List<Expr>>() {
         val callNames = it.t1.text.split("-").reversed()
         var call = Call(callNames.first(), it.t3 ?: emptyList())
         var i = 1
-        while(i < callNames.size) {
+        while (i < callNames.size) {
             call = Call(callNames[i], listOf(call))
             i++
         }

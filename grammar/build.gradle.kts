@@ -22,7 +22,18 @@ kotlin {
         }
     }
     js(IR) {
-        browser()
+        browser {
+            commonWebpackConfig {
+                cssSupport {
+                    enabled.set(false)
+                }
+            }
+            webpackTask {
+                output.libraryTarget = "commonjs2"
+                outputDirectory = file("../site/js/interpreter")
+            }
+        }
+        binaries.executable()
     }
     sourceSets {
         val commonMain by getting {
