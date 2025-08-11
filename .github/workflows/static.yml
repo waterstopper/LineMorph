@@ -36,7 +36,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          # Upload site folder ~~entire repository~~
+          # Upload site folder
           path: 'site/.' #'.'
       - name: Deploy to GitHub Pages
         id: deployment
